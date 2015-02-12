@@ -1,0 +1,96 @@
+
+<nav>
+	
+</nav>
+<div id="mapview" style="width:80%;height:800px;float:left;"></div>
+
+<script>
+	
+//集金、滞納者、スコア、名前、購読期間、配達止め、配達管理、
+	
+
+
+	$(function(){
+		setmap();
+		calcRoute(start,end,<%= raw @waypoints.to_json %>);
+		setUsers();
+	});
+
+	var map;
+	var start;
+	var end;
+	var directionsDisplay = new google.maps.DirectionsRenderer();
+    var directionsService = new google.maps.DirectionsService();
+
+	function setmap(){
+		var p_latlng = new google.maps.LatLng(<%= @lat %>,<%= @lon%>);
+		var myOptions = {
+	      zoom: 16,
+	      center: p_latlng,
+	      mapTypeId: google.maps.MapTypeId.ROADMAP
+	    };
+
+	    map = new google.maps.Map(document.getElementById('mapview'), myOptions); 
+    
+	    //経路
+	    directionsDisplay.setMap(map);
+
+	}
+
+  function setUsers(){
+  	var users = <%= raw @json %>
+  	for (var i = 0; i < users.length; i++) {
+	    	var latlng = new google.maps.LatLng(users[i].lat,users[i].lon);
+	    	placeMarker(latlng,null,map);
+
+	}
+
+  }
+
+
+//マーカー１つをセット  
+  function placeMarker(location,img,map) {   
+    var marker = new google.maps.Marker({
+        position: location,
+        map: map,
+        animation: google.maps.Animation.DROP,
+        icon: img
+    }); 
+    //map.setCenter(location);
+    return marker;
+  }
+
+  
+ //経路検索
+ function calcRoute(start,end,points) {
+ 	start = new google.maps.LatLng(<%= @lat %>,<%= @lon%>);
+	end =  new google.maps.LatLng(<%= @elat %>,<%= @elon%>);
+
+  var request = {
+    origin: start,
+    destination: end,
+    waypoints: points,
+    travelMode: google.maps.TravelMode.WALKING, //歩く
+    unitSystem: google.maps.DirectionsUnitSystem.METRIC, //km
+    optimizeWaypoints: true,//最適化された最短距離にする。
+    avoidHighways: false,//trueで高速道路を使用しない
+    avoidTolls: true, //trueで有料道路を使用しない
+    provideRouteAlternatives: true
+  };
+
+  directionsService.route(request, function(result, status) {
+    if (status == google.maps.DirectionsStatus.OK) {
+      directionsDisplay.setDirections(result);
+     // setDistance(result);
+    }
+  });
+}
+
+
+
+
+</script>
+
+
+
+
